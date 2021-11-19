@@ -1,17 +1,9 @@
 var $ = function (els) {
     return new $.init(els);
 }
-$.prototype.a = function () {
-    console.log('a')
-}
 $.init = function (els) {
-    if (els === undefined) {
+    if (els === undefined || els === null) {
         this.length = 0;
-        return this;
-    }
-    if (els instanceof HTMLElement) {
-        this[0] = els;
-        this.length = 1;
         return this;
     }
     if (typeof els === 'string') {
@@ -22,9 +14,19 @@ $.init = function (els) {
         }
         try {
             els = document.querySelectorAll(els);
+            for (var i = 0; i < els.length; i++) {
+                this[i] = els[i];
+            }
+            this.length = els.length;
+            return this;
         } catch (e) {
             return $.create(els);
         }
+    }
+    if (window===els ||document===els || els instanceof HTMLElement) {
+        this[0] = els;
+        this.length = 1;
+        return this;
     }
     for (var i = 0; i < els.length; i++) {
         this[i] = els[i];
@@ -530,12 +532,18 @@ $.init.prototype.empty = function (selector) {
     }
     return this;
 }
-$.init.prototype.css = function (css) {
+$.init.prototype.css = function (css, value=null) {
     if (!css) {
         if (this.length == 0) return {};
         return getComputedStyle(this[0]);
     }
     if (typeof css === 'string') {
+        if(value){
+            for (let i = 0; i < this.length; i++) {
+                this[i].style.setProperty(css, value);
+            }
+            return this;
+        }
         if (this.length == 0) return null;
         return getComputedStyle(this[0])[css];
     }
